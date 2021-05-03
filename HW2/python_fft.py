@@ -1,6 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+
+def transformTimeToFrequency(t, signal, sample_rate):
+    n = len(signal) # length of the signal
+    k = np.arange(n)
+    T = n/sample_rate
+    frq = k/T # two sides frequency range
+    half = range(int(n/2))
+    frq = frq[half]
+    Y = np.fft.fft(signal)/n #fft computing and normalization
+    Y = Y[half]
+
+    return frq, Y
+
 def movingAvgList(X, signal):
     if len(signal) == 0 or X == 0:
         return []
@@ -16,20 +29,15 @@ def movingAvgList(X, signal):
     print('movingAvgList: ', avgList)
     return list(avgList)
 
-def transformTimeToFrequency(t, signal, sample_rate):
-    n = len(signal) # length of the signal
-    k = np.arange(n)
-    T = n/sample_rate
-    frq = k/T # two sides frequency range
-    half = range(int(n/2))
-    frq = frq[half]
-    Y = np.fft.fft(signal)/n #fft computing and normalization
-    Y = Y[half]
+def IIR(A, B, signal):
+    new_average = signal.copy()
+    for i in range(1, len(signal)):
+        new_average[i] = new_average[i-1] * A + signal[i] * B
 
-    return frq, Y
+    return new_average
 
 
-def plotFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, X):
+def plotMAFFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, X):
     fig = plt.figure(filename.split(',')[0] + ' X=' + str(X))
     ax1, ax2, ax3 = fig.subplots(3, 1)
     ax1.plot(t, signal, 'k')
@@ -44,6 +52,23 @@ def plotFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, X):
     ax3.set_xlabel('Freq (Hz)')
     ax3.set_ylabel('|Y(freq)|')
     plt.show()
+
+def plotIIRFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, A, B):
+    fig = plt.figure(filename.split(',')[0] + ' A=' + str(A) + ' B=' + str(B))
+    ax1, ax2, ax3 = fig.subplots(3, 1)
+    ax1.plot(t, signal, 'k')
+    ax1.plot(t, filteredSignal, 'r')
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('Amplitude')
+    ax2.plot(t, filteredSignal, 'r')
+    ax2.set_xlabel('Time')
+    ax2.set_ylabel('Amplitude')
+    ax3.loglog(frqo, abs(Yo), 'k')
+    ax3.loglog(frqf, abs(Yf), 'r')
+    ax3.set_xlabel('Freq (Hz)')
+    ax3.set_ylabel('|Y(freq)|')
+    plt.show()
+
 
 def plotSingleFFT(t, signal, frq, Y, filename):
     fig = plt.figure(filename.split(',')[0])
