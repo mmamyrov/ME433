@@ -1,6 +1,55 @@
+from __future__ import print_function
+from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
 
+def blackmanFIR(s, fS, fL, N):
+    # Compute sinc filter.
+    h = np.sinc(2 * fL / fS * (np.arange(N) - (N - 1) / 2))
+
+    # Apply window.
+    h *= np.blackman(N)
+
+    # Normalize to get unity gain.
+    h /= np.sum(h)
+
+    return list(np.convolve(s, h, 'same'))
+
+def kaiserFIR(s, fS, fL, N, beta):
+    # Compute sinc filter.
+    h = np.sinc(2 * fL / fS * (np.arange(N) - (N - 1) / 2))
+
+    # Apply window.
+    h *= np.kaiser(N, beta)
+
+    # Normalize to get unity gain.
+    h /= np.sum(h)
+
+    # Applying the filter to a signal s can be as simple as writing
+    return list(np.convolve(s, h, 'same'))
+
+def hammingFIR(s, fS, fL, N):
+    # Compute sinc filter.
+    h = np.sinc(2 * fL / fS * (np.arange(N) - (N - 1) / 2))
+
+    # Apply window.
+    h *= np.hamming(N)
+
+    # Normalize to get unity gain.
+    h /= np.sum(h)
+
+    # Applying the filter to a signal s can be as simple as writing
+    return list(np.convolve(s, h, 'same'))
+
+def rectangularFIR(s, fS, fL, N):
+    # Compute sinc filter.
+    h = np.sinc(2 * fL / fS * (np.arange(N) - (N - 1) / 2))
+
+    # Normalize to get unity gain.
+    h /= np.sum(h)
+
+    # Applying the filter to a signal s can be as simple as writing
+    return list(np.convolve(s, h, 'same'))
 
 def transformTimeToFrequency(t, signal, sample_rate):
     n = len(signal) # length of the signal
@@ -36,9 +85,8 @@ def IIR(A, B, signal):
 
     return new_average
 
-
 def plotMAFFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, X):
-    fig = plt.figure(filename.split(',')[0] + ' X=' + str(X))
+    fig = plt.figure(filename.split('.')[0] + 'MAF X=' + str(X))
     ax1, ax2, ax3 = fig.subplots(3, 1)
     ax1.plot(t, signal, 'k')
     ax1.plot(t, filteredSignal, 'r')
@@ -54,7 +102,7 @@ def plotMAFFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, X):
     plt.show()
 
 def plotIIRFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, A, B):
-    fig = plt.figure(filename.split(',')[0] + ' A=' + str(A) + ' B=' + str(B))
+    fig = plt.figure(filename.split('.')[0] + 'IIR A=' + str(A) + ' B=' + str(B))
     ax1, ax2, ax3 = fig.subplots(3, 1)
     ax1.plot(t, signal, 'k')
     ax1.plot(t, filteredSignal, 'r')
@@ -69,9 +117,24 @@ def plotIIRFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, A, B):
     ax3.set_ylabel('|Y(freq)|')
     plt.show()
 
+def plotFIRFFTs(t, signal, filteredSignal, frqo, Yo, frqf, Yf, filename, details):
+    fig = plt.figure(filename.split('.')[0] + 'FIR ' + details)
+    ax1, ax2, ax3 = fig.subplots(3, 1)
+    ax1.plot(t, signal, 'k')
+    ax1.plot(t, filteredSignal, 'r')
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('Amplitude')
+    ax2.plot(t, filteredSignal, 'r')
+    ax2.set_xlabel('Time')
+    ax2.set_ylabel('Amplitude')
+    ax3.loglog(frqo, abs(Yo), 'k')
+    ax3.loglog(frqf, abs(Yf), 'r')
+    ax3.set_xlabel('Freq (Hz)')
+    ax3.set_ylabel('|Y(freq)|')
+    plt.show()
 
 def plotSingleFFT(t, signal, frq, Y, filename):
-    fig = plt.figure(filename.split(',')[0])
+    fig = plt.figure(filename.split('.')[0])
     ax1, ax2 = fig.subplots(2, 1)
     ax1.plot(t, signal, 'b')
     ax1.set_xlabel('Time')
