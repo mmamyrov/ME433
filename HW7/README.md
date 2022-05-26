@@ -4,6 +4,7 @@
 ![Sine and Triangle Wave nScope Image](https://github.com/mmamyrov/ME433/blob/master/HW7/Sin_Tri_Wave_nScope.png "Sine and Triangle Wave nScope Image")
 
 ### Breadboard Circuit Photo
+![Breadboard Circuit Image](https://github.com/mmamyrov/ME433/blob/master/HW7/circuit.jpg "Breadboard Circuit Image")
 
 ### Sine and Triangle Wave nScope Recording. Click on the image to open the Youtube Video. 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=MbjqP-tud0o" target="_blank">
