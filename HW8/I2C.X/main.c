@@ -40,6 +40,10 @@
 #define GPIOB  0x13
 #define OLATA  0x14
 
+void setPin(unsigned char addr, unsigned char reg, unsigned char val);
+unsigned char readPin(unsigned char addr, unsigned char reg);
+void delay(float sec);
+
 int main() {
 
     __builtin_disable_interrupts(); // disable interrupts while initializing things
@@ -59,34 +63,62 @@ int main() {
     // do your TRIS and LAT commands here
     TRISAbits.TRISA4 = 0; // A4 output
     TRISBbits.TRISB4 = 1; // B4 input
-    LATAbits.LATA4 = 0; // set A4 output to 0
-
+    LATAbits.LATA4 = 0; // set A4 output to 0 
+    
     __builtin_enable_interrupts();
     
-    i2c_master_setup();     // Init I2C
-    
-    unsigned char Wadd = 0b01000000;    
+    unsigned char Wadd = 0b01000000;  
     unsigned char gpiob_led_state = 0;
     
-    i2c_master_set_reg(Wadd, IODIRA, 0x00);     // Make all A pins as output
-    i2c_master_set_reg(Wadd, IODIRB, 0xFF);     // Make all B pins as input
-//    i2c_master_set_reg(Wadd, OLATA, 0x80);      // Only need to turn on A7
+    // Init I2C
+    i2c_master_setup();  
+    
+    setPin(Wadd, IODIRA, 0x00); // Make all A pins as output
+    setPin(Wadd, IODIRB, 0xFF); // Make all B pins as input
+//    setPin(Wadd, OLATA, 0x80); // Only need to turn on A7
     
     while (1) {
         // use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
         // remember the core timer runs at half the sysclk
         // 24 MHz is 1 sec => 12 MHz is 0.5 sec
-        
-        gpiob_led_state = i2c_master_read_reg(Wadd, GPIOB) & 1; // need only B0
+        gpiob_led_state = readPin(Wadd, GPIOB) & 1; // need only B0
   
         if (gpiob_led_state == 0) {
-            i2c_master_set_reg(Wadd, OLATA, 0x80); // Only need to turn on A7
+            setPin(Wadd, OLATA, 0x80); // Only need to turn on A7
         } else {
-            i2c_master_set_reg(Wadd, OLATA, 0x00); // Only need to turn off A7
+            setPin(Wadd, OLATA, 0x00); // Only need to turn off A7
         }
         
-        LATAbits.LATA4 = !LATAbits.LATA4;
-        
-        delay(0.1);
+        LATAbits.LATA4 = 1;
+        delay(0.2);
+        LATAbits.LATA4 = 0;
+        delay(0.2);
     }
+}
+
+void setPin(unsigned char addr, unsigned char reg, unsigned char val) {
+    i2c_master_start();
+    i2c_master_send(addr);
+    i2c_master_send(reg);
+    i2c_master_send(val);
+    i2c_master_stop();
+}
+
+unsigned char readPin(unsigned char addr, unsigned char reg) {
+    unsigned char raddr = addr | 1;
+    i2c_master_start();
+    i2c_master_send(addr);
+    i2c_master_send(reg);
+    i2c_master_restart();
+    i2c_master_send(raddr);
+    unsigned char out = i2c_master_recv();
+    i2c_master_ack(1);
+    i2c_master_stop();
+    
+    return out;
+}
+
+void delay(float sec) {
+    _CP0_SET_COUNT(0);
+    while (_CP0_GET_COUNT() < 24000000 * sec);
 }

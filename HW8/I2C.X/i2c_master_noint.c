@@ -58,31 +58,3 @@ void i2c_master_stop(void) { // send a STOP:
         ;
     } // wait for STOP to complete
 }
-
-void i2c_master_set_reg(unsigned char addr, unsigned char reg, unsigned char val) {
-    i2c_master_start();
-    i2c_master_send(addr);    
-    i2c_master_send(reg);
-    i2c_master_send(val);
-    i2c_master_stop();
-}
-
-unsigned char i2c_master_read_reg(unsigned char Wadd, unsigned char reg) {
-    unsigned char Radd = Wadd | 0x41;
-    
-    i2c_master_start();
-    i2c_master_send(Wadd);
-    i2c_master_send(reg);
-    i2c_master_restart();
-    i2c_master_send(Radd);
-    unsigned char out = i2c_master_recv();
-    i2c_master_ack(1);
-    i2c_master_stop();
-    
-    return out;
-}
-
-void delay(float sec) {
-    _CP0_SET_COUNT(0);
-    while (_CP0_GET_COUNT() < 24000000 * sec);
-}
